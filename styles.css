@@ -1,0 +1,46 @@
+/* styles.css */
+
+/* Add styles here to customize the appearance of your app */
+.query {
+    margin: 50px auto;
+    text-align: center;
+}
+
+input {
+    width: 50%;
+}
+.multiChoice {
+    position: relative;
+}
+video {
+    
+    width: 100%;
+}
+.subtitle {
+    position: absolute;
+    bottom: 0;
+    /* transform: translateY(10px); */
+    /* padding-top: 5vw; */
+    color: white;
+    font-size: 8vw;
+    text-align: center;
+    vertical-align: middle;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: rgba(125, 125, 125, 0.7);
+}
+.span {
+    font-size: 2vw;
+    pointer-events: all;
+}
+.filename {
+    color: rgb(223, 82, 210)
+}
+
+.line_number {
+    color: rgb(4, 188, 68)
+}
+.query {
+    color: rgb(199, 53, 39)
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <link href="./styles.css" rel="stylesheet">
+  <title>Hello World!</title>
+</head>
+
+<body>
+  <!-- <video controls autoplay>
+    <source src="file:///Volumes/video/Subtitles/The Big Bang Theory Season 1-11 Complete 720p/The Big Bang Theory Season 1/The.Big.Bang.Theory.S01E17.The.Tangerine.Factor.1080p.BluRay.x264-CiNEFiLE.English.mkv"  type="video/mp4">
+  </video> -->
+  <div class="query">
+    <input type="text" value="/usr/local/bin/rga 'intervene' --json -n -C 4 /Volumes/video/Subtitles/" />
+    <button class="searchBtn">搜索</button>
+  </div>
+  <div class="multiChoice">
+    <video data-start="10" data-end="20" controls autoplay>
+      <source src="file:///Volumes/video/Subtitles/The Big Bang Theory Season 1-11 Complete 720p/The Big Bang Theory Season 1/The.Big.Bang.Theory.S01E17.The.Tangerine.Factor.1080p.BluRay.x264-CiNEFiLE.English.mkv">
+    </video>
+    <div class="subtitle">dawdaffawf</div>
+  </div>
+  <div class="matches">
+    <div>
+      <div class="filename">
+        The.Big.Bang.Theory.S09E16.The.Positive.Negative.Reaction.720p.BluRay.x264.Pahe.in.vtt
+      </div>
+      <ul>
+        <li>
+          <span class="line_number">403</span>:What, are you not h<span
+            class="query"
+            >app</span>y about this?
+        </li>
+        <li>
+          <span class="line_number">596</span>:so this doesn't h
+          <span class="query">app</span>en to us?
+        </li>
+        <li>
+          <span class="line_number">765</span>:all
+          <span class="query">App</span>le does
+        </li>
+        <li>
+          <span class="line_number">1320</span>:I
+          <span class="query">app</span>reciate this, but you really don--
+        </li>
+        <li>
+          <span class="line_number">1383</span>:Well, I am so h
+          <span class="query">app</span>y
+        </li>
+      </ul>
+    </div>
+  </div>
+  <hr>
+  We are using Node.js <span id="node-version"></span>,
+  Chromium <span id="chrome-version"></span>,
+  and Electron <span id="electron-version"></span>.
+
+  <!-- You can also require other files to run in this process -->
+  <script src="./renderer.js"></script>
+</body>
+
+</html>
