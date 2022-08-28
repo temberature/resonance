@@ -1,0 +1,53 @@
+.t {
+	color: #4A6C9B;
+}
+
+p {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.s, .ss {
+	margin-bottom: 0;
+}
+
+.s {
+	color: darkred;
+	background-color: #EEECE1;
+	width: 100%;
+	padding-left: 5px;
+}
+
+.ss > b {
+	color: darkred;
+}
+
+.m1 {
+	padding-left: 9px;
+}
+
+.m2 {
+	padding-left: 18px;
+}
+
+.p {
+	color: green;
+	font-style: italic;
+}
+
+.opt {
+	display: inline;
+	color: gray;
+}
+
+.ex {
+	color: steelblue;
+}
+
+.color {
+	color: green;
+}
+
+.gray {
+	color: gray;
+}

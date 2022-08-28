@@ -9,7 +9,7 @@
 input {
   width: 50%;
 }
-.multiChoice {
+.multiChoice .option {
   position: relative;
 }
 video {
@@ -28,6 +28,18 @@ video {
   height: 100%;
   pointer-events: none;
   background: rgba(125, 125, 125, 0.7);
+}
+.subtitle .path {
+  font-size: 2vw;
+}
+.subtitle .span {
+  font-size: 2vw;
+}
+/* .term .m1 {
+  display: none;
+} */
+.term .m1:last-child {
+  display: block;
 }
 .span {
   font-size: 2vw;
