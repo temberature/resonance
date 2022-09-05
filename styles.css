@@ -9,6 +9,9 @@
 input {
   width: 50%;
 }
+img {
+  width: 100%;
+}
 .multiChoice .option {
   position: relative;
 }
@@ -38,6 +41,7 @@ video {
 /* .term .m1 {
   display: none;
 } */
+
 .term .m1:last-child {
   display: block;
 }

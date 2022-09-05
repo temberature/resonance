@@ -22,7 +22,25 @@ mdict.version(1).stores({
 // }, 5000);
 
 var _ = document.querySelectorAll;
-
+document
+  .querySelectorAll(".word")[0]
+  .addEventListener("keyup", function (event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+      document.querySelectorAll(".searchBtn")[0].click();
+    }
+  });
+document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", () => {
+  var $term = document.querySelectorAll(".term")[0];
+  const word = document.querySelectorAll(".word")[0].value.trim();
+  document
+    .querySelectorAll(".term")[0]
+    .insertBefore(
+      createElementFromHTML(`<p><img src='./data/${word}.png'></p>`)[0],
+      $term.childNodes[1]
+    );
+  saveTerm();
+});
 document
   .querySelectorAll(".searchBtn")[0]
   .addEventListener("click", async function (t, e) {
@@ -51,7 +69,10 @@ document
       console.log(records);
       var record = records[0];
       $term = document.querySelectorAll(".term")[0];
-      $term.innerHTML = records[0].html;
+      $term.innerHTML = records[0].html.replace(
+        "<img src='/",
+        "<img src='./data/"
+      );
       $term.setAttribute("data-id", records[0].id);
     } catch (e) {
       alert(`Error: ${e}`);
@@ -60,20 +81,24 @@ document
     $multiChoice.innerHTML = "";
 
     console.log(record);
-    if(!record) {
+    if (!record) {
       return;
-    } 
-    var right = (await db.terms
-    .where("word")
-    .equalsIgnoreCase(word)
-    .toArray())[0];
+    }
+    var right = (
+      await db.terms.where("word").equalsIgnoreCase(word).toArray()
+    )[0];
     if (!right) {
       return;
     }
     var wrongs = await db.terms
       .filter(function (term) {
-        return /.*?<span class="ex situation">.*/.test(term.html) && term.word !== record.word;
+        return (
+          /.*?<span class="ex situation">.*/.test(term.html) &&
+          term.word !== record.word &&
+          term.type == record.type
+        );
       })
+      .limit(3)
       .toArray();
     console.log(wrongs);
     wrongs.push(right);
@@ -109,17 +134,24 @@ function main(message) {
         html = "";
       } else {
         var text = c.data.lines.text.replace(
-          /(\d\d):(\d\d):(\d\d).(\d\d\d)/g,
-          function (match, p1, p2, p3) {
+          /(\d\d)?:?(\d\d):(\d\d).(\d\d\d)/g,
+          function (match, p1, p2, p3, p4) {
             // console.log(match, p1, p2, p3);
-            let location = +p1 * 60 * 60 + +p2 * 60 + +p3;
+            let location = +(p1 || 0) * 60 * 60 + +p2 * 60 + +p3;
             // location = location - 5 > 0 ? location - 5 : 0;
             return `<a href="sioyek://${c.data.path.text.replace(
               "srt",
               "mp4"
-            )}#${location}">${match}</a><button class="saveBtn">Save</button>`;
+            )}#${location}">${
+              (p1 || 0) + ":" + p2 + ":" + p3
+            }</a><button class="saveBtn">Save</button>`;
           }
         );
+        // console.log(text);
+        text = text
+          .replace(/\: (\w.*)/g, ': <span class="situation">$1</span>')
+          .replace(/(^\w.*)/g, '<span class="situation">$1</span>');
+        // console.log(text);
         text = text.replace(/Page (\d*)/g, function (match, p1) {
           return `<a href="sioyek://${c.data.path.text}#${p1}">${match}</a>`;
         });
@@ -155,7 +187,8 @@ function main(message) {
         var container = this.parentNode.parentNode;
         var span = container
           .querySelector(".text")
-          .innerHTML.replaceAll('<button class="saveBtn">Save</button>', "");
+          .innerHTML.replaceAll('<button class="saveBtn">Save</button>', "")
+          .replace(/<span class="situation">.*<\/span>/g, "");
         var path, start, end;
         container.querySelectorAll("a").forEach(function (link, index) {
           var parts = link.getAttribute("href").split("#");
@@ -167,12 +200,13 @@ function main(message) {
           }
         });
         var subtitle = "";
-        container = container.nextElementSibling;
+        // container = container.nextElementSibling;
         while (
           container &&
-          container.querySelector(".text").innerText.replace(" ", "") != ""
+          container.querySelector(".situation") &&
+          container.querySelector(".situation").innerText.replace(" ", "") != ""
         ) {
-          subtitle += " " + container.querySelector(".text").innerText;
+          subtitle += " " + container.querySelector(".situation").innerText;
           container = container.nextElementSibling;
         }
         console.log(span, path, start, end, subtitle);
@@ -188,19 +222,7 @@ function main(message) {
           $example
         );
         this.innerText = "success";
-        var id = +$term.getAttribute("data-id");
-        console.log($term.getAttribute("data-id"), { html: $term.innerHTML });
-        
-        
-        // console.log(updated);
-        var term = await mdict.terms.get(id);
-        term.html = $term.innerHTML;
-        db.terms.put(term, id).catch(function (e) {
-          alert("Error: " + (e.stack || e));
-        });
-        mdict.terms
-          .update(+$term.getAttribute("data-id"), { html: $term.innerHTML });
-        
+        saveTerm();
       });
     });
     setTimeout(function () {
@@ -238,7 +260,7 @@ function readTextFile(file) {
   rawFile.onreadystatechange = function () {
     if (rawFile.readyState === 4) {
       if (rawFile.status === 200 || rawFile.status == 0) {
-        var allText = rawFile.responseText;
+        var allText = rawFile.responseText.replaceAll("<img src='", "<img src='/data");
         var term = "";
         var chars = allText.split("");
         for (var i = 0; i < chars.length; i++) {
@@ -250,18 +272,14 @@ function readTextFile(file) {
             }
             console.log(term);
             var parts = term.split("\r\n");
-            console.log(parts);
+            // console.log(parts);
             var word = parts[0];
             var html = parts[1];
-            var nodes = createElementFromHTML(parts[1]);
-            var type =
-              (nodes[3] &&
-                nodes[3].childNodes[0] &&
-                nodes[3].childNodes[0].innerText) ||
-              "";
-            var origin = nodes[nodes.length - 1].childNodes[0]
-              ? nodes[nodes.length - 1].childNodes[0].innerHTML || ""
-              : "";
+            var nodes = createElementFromHTML(html);
+            var $type = nodes[0].parentNode.querySelectorAll(".m1 .p")[0];
+            var type = ($type && $type.innerText) || "";
+            var $opt = nodes[nodes.length - 1].querySelectorAll(".opt");
+            var origin = $opt.length > 0 ? $opt[0].innerHTML || "" : "";
             console.log({ word, html, type, origin });
             (async function () {
               await mdict.terms
@@ -301,62 +319,76 @@ function situation2paras($situation) {
 
 function generateOption(record) {
   console.log(record);
-  try {
-    // await db.friends.add({name: "Josephine", age: 21});
-    $situation = createElementFromHTML(
-      record.html
-    )[0].parentNode.querySelectorAll(".m1")[3];
-    // var $links = $term.querySelectorAll('.situation a').map(($link)=>$link.getAttribute("href"));
-    console.log($situation);
-    var paras = situation2paras($situation);
-    // alert (`My young friends: ${JSON.stringify(youngFriends)}`);
-    // Do something with the request.result!
-    var $option = createElementFromHTML(`<div class="option">
-         <video data-start="${paras.start}" data-end="${paras.end}" autoplay>
-           <source src="file://${paras.path}">
-           <source src="file://${paras.path.replace("mp4", "mkv")}">
-         </video>
-         <div class="subtitle">
-         ${$situation.innerHTML.replace(record.word, "****")}
-         </div>
-         </div>
-         `)[0];
-    $option.querySelectorAll("video").forEach((video) => {
-      var start = +video.getAttribute("data-start"),
-        end = +video.getAttribute("data-end");
-      video.addEventListener("loadedmetadata", function (event) {
-        console.log(event);
-        video.currentTime = start;
-      });
-      video.addEventListener("timeupdate", (event) => {
-        //   console.log(event);
-        if (video.currentTime > end) {
-          video.currentTime = start;
-          // video.play();
-        }
-        // console.log("The currentTime attribute has been updated. Again.");
-      });
+  // await db.friends.add({name: "Josephine", age: 21});
+  $situation = createElementFromHTML(
+    record.html
+  )[0].parentNode.querySelectorAll(".m1")[3];
+  // var $links = $term.querySelectorAll('.situation a').map(($link)=>$link.getAttribute("href"));
+  console.log($situation);
+  var paras = situation2paras($situation);
+  // alert (`My young friends: ${JSON.stringify(youngFriends)}`);
+  // Do something with the request.result!
+  var $option = createElementFromHTML(`<div class="option">
+       <video data-start="${paras.start}" data-end="${
+    paras.end
+  }" autoplay muted>
+         <source src="file://${paras.path}">
+         <source src="file://${paras.path && paras.path.replace("mp4", "mkv")}">
+       </video>
+       <div class="subtitle">
+       ${$situation.innerHTML.replace(record.word, "****")}
+       </div>
+       </div>
+       `)[0];
+  $option.querySelectorAll("video").forEach((video) => {
+    var start = +video.getAttribute("data-start"),
+      end = +video.getAttribute("data-end");
+    video.addEventListener("loadedmetadata", function (event) {
+      console.log(event);
+      video.currentTime = start;
     });
-    return $option;
-  } catch (e) {
-    alert(`Error: ${e}`);
-  }
+    video.addEventListener("timeupdate", (event) => {
+      //   console.log(event);
+      if (video.currentTime > end) {
+        video.currentTime = start;
+        // video.play();
+      }
+      // console.log("The currentTime attribute has been updated. Again.");
+    });
+  });
+  return $option;
 }
 
 function shuffle(array) {
-  let currentIndex = array.length,  randomIndex;
+  let currentIndex = array.length,
+    randomIndex;
 
   // While there remain elements to shuffle.
   while (currentIndex != 0) {
-
     // Pick a remaining element.
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+      array[randomIndex],
+      array[currentIndex],
+    ];
   }
 
   return array;
+}
+
+async function saveTerm() {
+  var $term = document.querySelectorAll(".term")[0];
+  var id = +$term.getAttribute("data-id");
+  console.log($term.getAttribute("data-id"), { html: $term.innerHTML });
+
+  // console.log(updated);
+  var term = await mdict.terms.get(id);
+  term.html = $term.innerHTML;
+  db.terms.put(term, id).catch(function (e) {
+    alert("Error: " + (e.stack || e));
+  });
+  mdict.terms.update(+$term.getAttribute("data-id"), { html: $term.innerHTML });
 }
