@@ -50,11 +50,11 @@ app.on("window-all-closed", function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 ipcMain.handle("my-invokable-ipc", async (event, ...args) => {
-  console.log(args);
+  // console.log(args);
   var c = args[0].split(" ");
   var command = c.shift();
   const process = await spawn(command, c, { shell: true });
-  console.log(process);
+  // console.log(process);
   let result = "";
   process.stdout.on("data", (data) => {
     console.log(data);

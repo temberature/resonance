@@ -6,6 +6,8 @@
 // process.
 const { app, BrowserWindow, ipcRenderer } = require("electron");
 const { Dexie } = require("Dexie");
+fs = require("fs");
+
 console.log(123);
 var db = new Dexie("cache");
 db.version(1).stores({
@@ -20,6 +22,9 @@ mdict.version(1).stores({
 //     "file:///Users/tong/Downloads/demo_dict/New Oxford American Dictionary 3rd/New Oxford American Dictionary, 3rd Edition.txt"
 //   );
 // }, 5000);
+saveTextFile(
+  "file:///Users/tong/Downloads/demo_dict/New Oxford American Dictionary 3rd/New Oxford American Dictionary, 3rd Edition.txt"
+);
 
 var _ = document.querySelectorAll;
 document
@@ -51,9 +56,9 @@ document
       document.querySelectorAll(".matches")[0].innerHTML = "";
       var cmd =
         document.querySelectorAll(".rga")[0].value.trim() +
-        " " +
+        " ' " +
         word +
-        " " +
+        "' " +
         document.querySelectorAll(".paras")[0].value.trim();
       console.log(cmd);
 
@@ -69,10 +74,7 @@ document
       console.log(records);
       var record = records[0];
       $term = document.querySelectorAll(".term")[0];
-      $term.innerHTML = records[0].html.replace(
-        "<img src='/",
-        "<img src='./data/"
-      );
+      $term.innerHTML = records[0].html;
       $term.setAttribute("data-id", records[0].id);
     } catch (e) {
       alert(`Error: ${e}`);
@@ -142,6 +144,9 @@ function main(message) {
             return `<a href="sioyek://${c.data.path.text.replace(
               "srt",
               "mp4"
+            ).replace(
+              "mkv",
+              "mp4"
             )}#${location}">${
               (p1 || 0) + ":" + p2 + ":" + p3
             }</a><button class="saveBtn">Save</button>`;
@@ -201,14 +206,18 @@ function main(message) {
         });
         var subtitle = "";
         // container = container.nextElementSibling;
-        while (
+        do {
+          var $situation = container.querySelector(".situation");
+          if ($situation) {
+            subtitle += " " + $situation.innerText
+          }
+          
+          container = container.nextElementSibling;
+        } while (
           container &&
           container.querySelector(".situation") &&
           container.querySelector(".situation").innerText.replace(" ", "") != ""
-        ) {
-          subtitle += " " + container.querySelector(".situation").innerText;
-          container = container.nextElementSibling;
-        }
+        ) 
         console.log(span, path, start, end, subtitle);
         var $term = document.querySelectorAll(".term")[0];
         var $example = document.querySelectorAll(".term .m1")[3];
@@ -260,7 +269,10 @@ function readTextFile(file) {
   rawFile.onreadystatechange = function () {
     if (rawFile.readyState === 4) {
       if (rawFile.status === 200 || rawFile.status == 0) {
-        var allText = rawFile.responseText.replaceAll("<img src='", "<img src='/data");
+        var allText = rawFile.responseText.replaceAll(
+          "<img src='",
+          "<img src='/data"
+        );
         var term = "";
         var chars = allText.split("");
         for (var i = 0; i < chars.length; i++) {
@@ -301,6 +313,19 @@ function readTextFile(file) {
     }
   };
   rawFile.send(null);
+}
+
+async function saveTextFile(file) {
+  let allText = "";
+  const records = await mdict.terms.orderBy("id").each((term) => {
+    console.log(term);
+    allText += term.word + "\r\n" + term.html + "\r\n" + "</>" + "\r\n";
+  });
+  responseText = allText.replaceAll("<img src='./data", "<img src='");
+  fs.writeFile('helloworld.txt', responseText, function (err) {
+    if (err) return console.log(err);
+    console.log('Hello World > helloworld.txt');
+  });
 }
 
 function situation2paras($situation) {
