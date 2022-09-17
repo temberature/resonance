@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src * 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src http://* 'self' 'unsafe-inline'; media-src * blob: "
+    /> -->
+    <!-- <link href="./styles.css" rel="stylesheet" /> -->
+    <title>Resonance</title>
+  </head>
+
+  <body>
+    <!-- <video controls autoplay>
+    <source src="file:///Volumes/video/Subtitles/The Big Bang Theory Season 1-11 Complete 720p/The Big Bang Theory Season 1/The.Big.Bang.Theory.S01E17.The.Tangerine.Factor.1080p.BluRay.x264-CiNEFiLE.English.mkv"  type="video/mp4">
+  </video> -->
+  <div><input class="meta" type="text"><button class="addMetaBtn">addMeta</button></div>
+    <div class="query">
+      
+      <input class="word" type="text" value="stool">
+      <input class="paras"
+        type="text"
+        value="--json -n -C 4 '/Volumes/video/Subtitles/Young.Sheldon.S03.COMPLETE.720p.AMZN.WEBRip.x264-GalaxyTV[TGx]'"
+      />
+      <input class="rga" type="text" value="/usr/local/bin/rga">
+      <div>
+        <button class="searchBtn">搜索</button>
+      </div>
+      
+    </div>
+    <div class="multiChoice">
+      <div class="option">
+        <video data-start="10" data-end="20" controls autoplay muted>
+          <source
+            src="atom:///Volumes/video/Subtitles/The.Kominsky.Method.S01.COMPLETE.720p.BluRay.x264-GalaxyTV[TGx]/The.Kominsky.Method.S01E01.720p.BluRay.x264-GalaxyTV.mkv"
+          />
+        </video>
+        <div class="subtitle">dawdaffawf</div>
+      </div>
+
+    </div>
+    <div class="term">
+      
+    </div>
+    <div class="matches">
+      <div>
+        <div class="filename">
+          The.Big.Bang.Theory.S09E16.The.Positive.Negative.Reaction.720p.BluRay.x264.Pahe.in.vtt
+        </div>
+        <ul>
+          <li>
+            <span class="line_number">403</span>:What, are you not h<span
+              class="query"
+              >app</span
+            >y about this?
+          </li>
+          <li>
+            <span class="line_number">596</span>:so this doesn't h
+            <span class="query">app</span>en to us?
+          </li>
+          <li>
+            <span class="line_number">765</span>:all
+            <span class="query">App</span>le does
+          </li>
+          <li>
+            <span class="line_number">1320</span>:I
+            <span class="query">app</span>reciate this, but you really don--
+          </li>
+          <li>
+            <span class="line_number">1383</span>:Well, I am so h
+            <span class="query">app</span>y
+          </li>
+        </ul>
+      </div>
+    </div>
+    <hr />
+    We are using Node.js <span id="node-version"></span>, Chromium
+    <span id="chrome-version"></span>, and Electron
+    <span id="electron-version"></span>.
+
+    <!-- You can also require other files to run in this process -->
+    <!-- <script src="./renderer.js"></script> -->
+  </body>
+</html>
