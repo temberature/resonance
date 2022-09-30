@@ -69,6 +69,14 @@ document
             document.querySelectorAll(".searchBtn")[0].click();
         }
     });
+document
+    .querySelectorAll(".paras")[0]
+    .addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            document.querySelectorAll(".searchBtn")[0].click();
+        }
+    });
 document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", () => {
     var $term = document.querySelectorAll(".term")[0];
     const word = document.querySelectorAll(".word")[0].value.trim();
@@ -91,7 +99,7 @@ document
             var cmd =
                 document.querySelectorAll(".rga")[0].value.trim() +
                 " ' " +
-                word +
+                word.replace(/e$/, '') +
                 "' " +
                 document.querySelectorAll(".paras")[0].value.trim();
             console.log(cmd);
@@ -458,7 +466,7 @@ function generateOption(record) {
          <source src="atom://${paras.path && paras.path.replace("mp4", "mkv")}">
        </video>
        <div class="subtitle">
-       ${$situation.innerHTML.replace(new RegExp(record.word, 'gi'), "****")}
+       ${$situation.innerHTML.replace(new RegExp(record.word.replace(/e$/, ''), 'gi'), "****")}
        </div>
        </div>
        `)[0];
