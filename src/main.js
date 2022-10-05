@@ -97,7 +97,7 @@ ipcMain.handle("my-invokable-ipc", async (event, ...args) => {
     console.log(data);
     result += data.toString();
     // do something with the data here
-    // win.webContents.send('asynchronous-message', data.toString());
+    win.webContents.send('asynchronous-message', data.toString());
   });
 
   // process.stdout.on('drain', () => {
@@ -108,7 +108,7 @@ ipcMain.handle("my-invokable-ipc", async (event, ...args) => {
 
   process.on("exit", () => {
     console.log(args);
-    win.webContents.send("asynchronous-message", result);
+    // win.webContents.send("asynchronous-message", result);
     // final checks (e.g. - expect) go here
   });
 });

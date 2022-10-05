@@ -99,7 +99,7 @@ document
             var cmd =
                 document.querySelectorAll(".rga")[0].value.trim() +
                 " ' " +
-                word.replace(/e$/, '') +
+                (word.length > 5 ? word.replace(/e$/, '') : word) +
                 "' " +
                 document.querySelectorAll(".paras")[0].value.trim();
             console.log(cmd);
@@ -175,21 +175,30 @@ document
         options.forEach(option => $multiChoice.appendChild(generateOption(option)))
     });
 
+let last = '';
 myAPI.ipcRendererOn("asynchronous-message", function (evt, message) {
     console.log(message); // Returns: {'SAVED': 'File Saved'}
-
-    main(message);
+    message = last + message;
+    last = '';
+    message.split('\n').forEach(l=> {
+        try {
+            line(l);
+        } catch (error) {
+            last = l;
+        }
+    })
+    
 });
-function main(message) {
+function line(message) {
     var result = readJsonLines(message);
-    // console.log(result);
+    console.log(result);
     if (result[0].type === "summary") {
         return;
     }
 
     var html = `${(function () {
         return result.reduce((p, c) => {
-            // console.log(c);
+            console.log(c);
             let html;
             if (c.type == "begin") {
                 html = `<div><div class="filename">
@@ -200,7 +209,8 @@ function main(message) {
             } else if (c.type == "summary") {
                 html = "";
             } else {
-                var text = c.data.lines.text.replace(
+                var text = c.data.lines.text || c.data.lines.bytes.toString('base64')
+                text = text && text.replace(
                     /(\d\d)?:?(\d\d):(\d\d).(\d\d\d)/g,
                     function (match, p1, p2, p3, p4) {
                         // console.log(match, p1, p2, p3);
