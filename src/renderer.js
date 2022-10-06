@@ -90,104 +90,111 @@ document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", () => {
 });
 document
     .querySelectorAll(".searchBtn")[0]
-    .addEventListener("click", async function (t, e) {
-        console.log(t, e);
-        const word = document.querySelectorAll(".word")[0].value.trim();
-        (async () => {
-            console.log(345);
-            document.querySelectorAll(".matches")[0].innerHTML = "";
-            var cmd =
-                document.querySelectorAll(".rga")[0].value.trim() +
-                " ' " +
-                (word.length > 5 ? word.replace(/e$/, '') : word) +
-                "' " +
-                document.querySelectorAll(".paras")[0].value.trim();
-            console.log(cmd);
+    .addEventListener("click", search);
 
-            const result = await myAPI.ipcRendererInvoke("my-invokable-ipc", cmd);
-        })();
-        try {
-            let records = await db.terms
-                .where("word")
-                .equalsIgnoreCase(word)
-                .toArray();
-            console.log(records);
-            if(records.length < 1) {
-                records = await mdict.terms
-                .where("word")
-                .equalsIgnoreCase(word)
-                .toArray();
+document
+    .querySelectorAll(".gSearchBtn")[0]
+    .addEventListener("click", search);
 
-                db.terms.put(records[0]).catch(function (e) {
-                    alert("Error: " + (e.stack || e));
-                });
+async function search(e) {
+    console.log(e);
+    const word = document.querySelectorAll(".word")[0].value.trim();
+    (async () => {
+        console.log(345);
+        document.querySelectorAll(".matches")[0].innerHTML = "";
+        var cmd =
+            document.querySelectorAll(".rga")[0].value.trim() +
+            " ' " +
+            (word.length > 5 ? word.replace(/e$/, '') : word) +
+            "' " +
+            document.querySelectorAll(".paras")[0].value.trim() +
+            " " +
+            (e.target.getAttribute('class') === 'gSearchBtn' ? '': document.querySelectorAll(".range")[0].value.trim());
+        console.log(cmd);
 
-            }
-
-
-            console.log(records);
-            var record = records[0];
-            var $term = document.querySelectorAll(".term")[0];
-            $term.innerHTML = records[0].html;
-            $term.setAttribute("data-id", records[0].id);
-        } catch (e) {
-            alert(`Error: ${e}`);
-        }
-        var $multiChoice = document.querySelectorAll(".multiChoice")[0];
-        $multiChoice.innerHTML = "";
-
-        console.log(record);
-        if (!record) {
-            return;
-        }
-        var right = (
-            await db.terms.filter(function (term) {
-                return (
-                    /.*?<span class="ex situation">.*/.test(term.html) &&
-                    term.word == record.word                );
-            }).toArray()
-        )[0];
-        if (!right) {
-            return;
-        }
-        var wrongs = await db.terms
-            .filter(function (term) {
-                return (
-                    /.*?<span class="ex situation">.*/.test(term.html) &&
-                    term.word !== record.word &&
-                    term.type == record.type
-                );
-            })
+        const result = await myAPI.ipcRendererInvoke("my-invokable-ipc", cmd);
+    })();
+    try {
+        let records = await db.terms
+            .where("word")
+            .equalsIgnoreCase(word)
             .toArray();
-        
-        console.log(wrongs);
-        let options = [right];
-        // wrongs.push(right);
-        let share = Math.floor(wrongs.length / 3), location;
-        [1, 2, 3].forEach((wrong, index) => {
-            location = share * index + Math.floor(Math.random() * share)
-            // span = Math.floor(l*(index+1)/3)
-            // location = Math.floor(random * (index + 1)/3)
-            options.push(wrongs[location]);
-            console.log(location);
-        });
-        shuffle(options);
-        options.forEach(option => $multiChoice.appendChild(generateOption(option)))
-    });
+        console.log(records);
+        if (records.length < 1) {
+            records = await mdict.terms
+                .where("word")
+                .equalsIgnoreCase(word)
+                .toArray();
 
+            db.terms.put(records[0]).catch(function (e) {
+                alert("Error: " + (e.stack || e));
+            });
+
+        }
+
+
+        console.log(records);
+        var record = records[0];
+        var $term = document.querySelectorAll(".term")[0];
+        $term.innerHTML = records[0].html;
+        $term.setAttribute("data-id", records[0].id);
+    } catch (e) {
+        alert(`Error: ${e}`);
+    }
+    var $multiChoice = document.querySelectorAll(".multiChoice")[0];
+    $multiChoice.innerHTML = "";
+
+    console.log(record);
+    if (!record) {
+        return;
+    }
+    var right = (
+        await db.terms.filter(function (term) {
+            return (
+                /.*?<span class="ex situation">.*/.test(term.html) &&
+                term.word == record.word);
+        }).toArray()
+    )[0];
+    if (!right) {
+        return;
+    }
+    var wrongs = await db.terms
+        .filter(function (term) {
+            return (
+                /.*?<span class="ex situation">.*/.test(term.html) &&
+                term.word !== record.word &&
+                term.type == record.type
+            );
+        })
+        .toArray();
+
+    console.log(wrongs);
+    let options = [right];
+    // wrongs.push(right);
+    let share = Math.floor(wrongs.length / 3), location;
+    [1, 2, 3].forEach((wrong, index) => {
+        location = share * index + Math.floor(Math.random() * share)
+        // span = Math.floor(l*(index+1)/3)
+        // location = Math.floor(random * (index + 1)/3)
+        options.push(wrongs[location]);
+        console.log(location);
+    });
+    shuffle(options);
+    options.forEach(option => $multiChoice.appendChild(generateOption(option)))
+}
 let last = '';
 myAPI.ipcRendererOn("asynchronous-message", function (evt, message) {
     console.log(message); // Returns: {'SAVED': 'File Saved'}
     message = last + message;
     last = '';
-    message.split('\n').forEach(l=> {
+    message.split('\n').forEach(l => {
         try {
             line(l);
         } catch (error) {
             last = l;
         }
     })
-    
+
 });
 function line(message) {
     var result = readJsonLines(message);
@@ -238,7 +245,7 @@ function line(message) {
                 html = `<li>
           <span class="line_number">${c.data.line_number}</span>
           :<span class="text">${c.data.submatches.length > 0
-                        ? text.replace(new RegExp(c.data.submatches[0].match.text.trim(), 'gi'),  `<span class="query">${c.data.submatches[0].match.text}</span>`)
+                        ? text.replace(new RegExp(c.data.submatches[0].match.text.trim(), 'gi'), `<span class="query">${c.data.submatches[0].match.text}</span>`)
                         : text
                     }</span>
           
@@ -438,10 +445,10 @@ async function saveTextFile(file) {
         allText += term.word + "\r\n" + term.html + "\r\n" + "</>" + "\r\n";
     });
     const responseText = allText.replaceAll(`<img src='/data/data`, `<img src='`).replaceAll(`<img src="./data`, `<img src="`).replaceAll(`<img src="/data`, `<img src="`);
-      myAPI.fsWriteFile('helloworld.txt', responseText, function (err) {
+    myAPI.fsWriteFile('helloworld.txt', responseText, function (err) {
         if (err) return console.log(err);
         console.log('Hello World > helloworld.txt');
-      });
+    });
 }
 
 function situation2paras($situation) {
