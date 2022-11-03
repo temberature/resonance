@@ -40,7 +40,7 @@ app.whenReady().then(() => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [`default-src * 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src http://* 'self' 'unsafe-inline'; media-src * blob: your-custom-protocol: atom: file:`]
+        'Content-Security-Policy': [`default-src * 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src http://* 'self' 'unsafe-inline'; media-src * blob: your-custom-protocol: atom: file: ; img-src * blob: your-custom-protocol: atom: file:`]
       }
     })
   })

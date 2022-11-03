@@ -77,7 +77,8 @@ document
             document.querySelectorAll(".searchBtn")[0].click();
         }
     });
-document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", () => {
+document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", addMeta);
+function addMeta() {
     var $term = document.querySelectorAll(".term")[0];
     const word = document.querySelectorAll(".word")[0].value.trim();
     document
@@ -87,7 +88,7 @@ document.querySelectorAll(".addMetaBtn")[0].addEventListener("click", () => {
             $term.childNodes[1]
         );
     saveTerm();
-});
+}
 document
     .querySelectorAll(".searchBtn")[0]
     .addEventListener("click", search);
@@ -105,11 +106,11 @@ async function search(e) {
         var cmd =
             document.querySelectorAll(".rga")[0].value.trim() +
             " ' " +
-            (word.length > 5 ? word.replace(/e$/, '') : word) +
+            (word.length > 3 ? word.replace(/e$/, '') : word + ' ') +
             "' " +
             document.querySelectorAll(".paras")[0].value.trim() +
             " " +
-            (e.target.getAttribute('class') === 'gSearchBtn' ? '': document.querySelectorAll(".range")[0].value.trim());
+            (e.target.getAttribute('class') === 'gSearchBtn' ? '' : document.querySelectorAll(".range")[0].value.trim());
         console.log(cmd);
 
         const result = await myAPI.ipcRendererInvoke("my-invokable-ipc", cmd);
@@ -216,7 +217,10 @@ function line(message) {
             } else if (c.type == "summary") {
                 html = "";
             } else {
-                var text = c.data.lines.text || c.data.lines.bytes.toString('base64')
+                var text = c.data.lines.text || c.data.lines.bytes.toString('base64');
+                text = text
+                    .replace(/\: (\w.*)/g, ': <span class="situation">$1</span>')
+                    .replace(/(^\D.*)/g, '<span class="situation">$1</span>');
                 text = text && text.replace(
                     /(\d\d)?:?(\d\d):(\d\d).(\d\d\d)/g,
                     function (match, p1, p2, p3, p4) {
@@ -234,9 +238,7 @@ function line(message) {
                     }
                 );
                 // console.log(text);
-                text = text
-                    .replace(/\: (\w.*)/g, ': <span class="situation">$1</span>')
-                    .replace(/(^\w.*)/g, '<span class="situation">$1</span>');
+
                 // console.log(text);
                 text = text.replace(/Page (\d*)/g, function (match, p1) {
                     return `<a href="sioyek://${c.data.path.text}#${p1}">${match}</a>`;
