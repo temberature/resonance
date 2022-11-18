@@ -159,28 +159,72 @@ async function search(e) {
     if (!right) {
         return;
     }
+    
+    var season = right.html.match(/sioyek:\/\/(.*?)#/)[1].split('/');
+    var dir = season[season.length - 2], name = season[season.length - 1];
+    var condition = new RegExp('.*?'+ escapeRegExp(dir) +'\/(.*?)#')
+    console.log(season, condition);
     var wrongs = await db.terms
         .filter(function (term) {
-            return (
-                /.*?<span class="ex situation">.*/.test(term.html) &&
+            // console.log(term.html);
+            // var match = term.html.replaceAll('\n', '').replaceAll('\r', '').match(condition)[1];
+            // console.log(match);
+            // console.log(createElementFromHTML(
+            //     term.html
+            // )[0].parentNode.querySelectorAll(".m1"));
+            var $situation;
+            return Array.from(createElementFromHTML(
+                term.html
+            )[0].parentNode.querySelectorAll(".m1")).some($m1 => {
+                // console.log($m1.innerHTML);
+                var match = $m1.innerHTML.match(condition);
+                // console.log(match);
+                if(!match) {
+                    return;
+                }
+                var name = match[1]
+                if(name &&
                 term.word !== record.word &&
-                term.type == record.type
-            );
-        })
-        .toArray();
+                term.type == record.type) {
+                    term.$situation = $m1;
+                    term.name = name;
+                    return true;
+                }
+            });
+        
+            
+        }).toArray();
 
     console.log(wrongs);
-    let options = [right];
+    right.$situation = createElementFromHTML(
+        right.html
+    )[0].parentNode.querySelectorAll(".m1")[3];
+    right.name = name;
+    wrongs = wrongs.concat([right]).sort((a, b) => {
+        if(a.name < b.name) {
+            return -1;
+        } else {
+            return 1
+        }
+    })
+    console.log(wrongs);
+    let options = [];
     // wrongs.push(right);
-    let share = Math.floor(wrongs.length / 3), location;
-    [1, 2, 3].forEach((wrong, index) => {
-        location = share * index + Math.floor(Math.random() * share)
-        // span = Math.floor(l*(index+1)/3)
-        // location = Math.floor(random * (index + 1)/3)
-        options.push(wrongs[location]);
-        console.log(location);
-    });
-    shuffle(options);
+    // let share = Math.floor(wrongs.length / 3), location;
+    // [1, 2, 3].forEach((wrong, index) => {
+    //     location = share * index + Math.floor(Math.random() * share)
+    //     // span = Math.floor(l*(index+1)/3)
+    //     // location = Math.floor(random * (index + 1)/3)
+    //     options.push(wrongs[location]);
+    //     console.log(location);
+    // });
+    // shuffle(options);
+    wrongs.forEach((wrong, index) => {
+        if(wrong.name === right.name) {
+            let rand = Math.floor(Math.random() * 4);
+            options = wrongs.slice(index - rand, index + 4 - rand);
+        }
+    })
     options.forEach(option => $multiChoice.appendChild(generateOption(option)))
 }
 let last = '';
@@ -468,11 +512,9 @@ function situation2paras($situation) {
 }
 
 function generateOption(record) {
-    console.log(record);
+    // console.log(record);
     // await db.friends.add({name: "Josephine", age: 21});
-    var $situation = createElementFromHTML(
-        record.html
-    )[0].parentNode.querySelectorAll(".m1")[3];
+    var $situation = record.$situation;
     // var $links = $term.querySelectorAll('.situation a').map(($link)=>$link.getAttribute("href"));
     console.log($situation);
     var paras = situation2paras($situation);
@@ -542,3 +584,7 @@ async function saveTerm() {
     });
     mdict.terms.update(+$term.getAttribute("data-id"), { html: $term.innerHTML });
 }
+
+function escapeRegExp(text) {
+    return text.replace(/[[\]{}()*+?.,\\^$|#]/g, '\\$&');
+  }
