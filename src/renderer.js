@@ -105,8 +105,8 @@ async function search(e) {
         document.querySelectorAll(".matches")[0].innerHTML = "";
         var cmd =
             document.querySelectorAll(".rga")[0].value.trim() +
-            " ' " +
-            (word.length > 3 ? word.replace(/e$/, '') : word + ' ') +
+            " '\\b" +
+            (word.length > 3 ? word.replace(/e$/, '') : word + '\\b') +
             "' " +
             document.querySelectorAll(".paras")[0].value.trim() +
             " " +
@@ -116,16 +116,17 @@ async function search(e) {
         const result = await myAPI.ipcRendererInvoke("my-invokable-ipc", cmd);
     })();
     try {
-        let records = await db.terms
-            .where("word")
-            .equalsIgnoreCase(word)
-            .toArray();
+        let condition = /^(\w| )+$/.test(word) ? '^' + word + '$' : word;
+
+        let records = await db.terms.filter(function (term) {
+            return new RegExp(condition).test(term.word);
+        }).toArray()
         console.log(records);
         if (records.length < 1) {
             records = await mdict.terms
-                .where("word")
-                .equalsIgnoreCase(word)
-                .toArray();
+                .filter(function (term) {
+                    return new RegExp(condition).test(term.word);
+                }).toArray()
 
             db.terms.put(records[0]).catch(function (e) {
                 alert("Error: " + (e.stack || e));
@@ -162,16 +163,11 @@ async function search(e) {
     
     var season = right.html.match(/sioyek:\/\/(.*?)#/)[1].split('/');
     var dir = season[season.length - 2], name = season[season.length - 1];
-    var condition = new RegExp('.*?'+ escapeRegExp(dir) +'\/(.*?)#')
+    let condition = new RegExp('.*?' + escapeRegExp(dir) + '\/(.*?)#')
     console.log(season, condition);
     var wrongs = await db.terms
         .filter(function (term) {
-            // console.log(term.html);
-            // var match = term.html.replaceAll('\n', '').replaceAll('\r', '').match(condition)[1];
-            // console.log(match);
-            // console.log(createElementFromHTML(
-            //     term.html
-            // )[0].parentNode.querySelectorAll(".m1"));
+
             var $situation;
             return Array.from(createElementFromHTML(
                 term.html
@@ -179,11 +175,11 @@ async function search(e) {
                 // console.log($m1.innerHTML);
                 var match = $m1.innerHTML.match(condition);
                 // console.log(match);
-                if(!match) {
+                if (!match) {
                     return;
                 }
                 var name = match[1]
-                if(name &&
+                if (name &&
                 term.word !== record.word &&
                 term.type == record.type) {
                     term.$situation = $m1;
@@ -196,12 +192,13 @@ async function search(e) {
         }).toArray();
 
     console.log(wrongs);
-    right.$situation = createElementFromHTML(
+    right.$situation = Array.from(createElementFromHTML(
         right.html
-    )[0].parentNode.querySelectorAll(".m1")[3];
+    )[0].parentNode.querySelectorAll(".m1"))
+        .filter($node => $node.querySelectorAll('.situation').length > 0)[0];
     right.name = name;
     wrongs = wrongs.concat([right]).sort((a, b) => {
-        if(a.name < b.name) {
+        if (a.name < b.name) {
             return -1;
         } else {
             return 1
@@ -209,18 +206,9 @@ async function search(e) {
     })
     console.log(wrongs);
     let options = [];
-    // wrongs.push(right);
-    // let share = Math.floor(wrongs.length / 3), location;
-    // [1, 2, 3].forEach((wrong, index) => {
-    //     location = share * index + Math.floor(Math.random() * share)
-    //     // span = Math.floor(l*(index+1)/3)
-    //     // location = Math.floor(random * (index + 1)/3)
-    //     options.push(wrongs[location]);
-    //     console.log(location);
-    // });
-    // shuffle(options);
+
     wrongs.forEach((wrong, index) => {
-        if(wrong.name === right.name) {
+        if (wrong.name === right.name) {
             let rand = Math.floor(Math.random() * 4);
             options = wrongs.slice(index - rand, index + 4 - rand);
         }
@@ -243,14 +231,14 @@ myAPI.ipcRendererOn("asynchronous-message", function (evt, message) {
 });
 function line(message) {
     var result = readJsonLines(message);
-    console.log(result);
+    // console.log(result);
     if (result[0].type === "summary") {
         return;
     }
 
     var html = `${(function () {
         return result.reduce((p, c) => {
-            console.log(c);
+            // console.log(c);
             let html;
             if (c.type == "begin") {
                 html = `<div><div class="filename">
