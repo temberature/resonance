@@ -160,7 +160,7 @@ async function search(e) {
     if (!right) {
         return;
     }
-    
+
     var season = right.html.match(/sioyek:\/\/(.*?)#/)[1].split('/');
     var dir = season[season.length - 2], name = season[season.length - 1];
     let condition = new RegExp('.*?' + escapeRegExp(dir) + '\/(.*?)#')
@@ -180,15 +180,15 @@ async function search(e) {
                 }
                 var name = match[1]
                 if (name &&
-                term.word !== record.word &&
-                term.type == record.type) {
+                    term.word !== record.word &&
+                    term.type == record.type) {
                     term.$situation = $m1;
                     term.name = name;
                     return true;
                 }
             });
-        
-            
+
+
         }).toArray();
 
     console.log(wrongs);
@@ -259,13 +259,7 @@ function line(message) {
                         // console.log(match, p1, p2, p3);
                         let location = +(p1 || 0) * 60 * 60 + +p2 * 60 + +p3;
                         // location = location - 5 > 0 ? location - 5 : 0;
-                        return `<a href="sioyek://${c.data.path.text.replace(
-                            "srt",
-                            "mp4"
-                        ).replace(
-                            "mkv",
-                            "mp4"
-                        )}#${location}">${(p1 || 0) + ":" + p2 + ":" + p3
+                        return `<a href="sioyek://${c.data.path.text.replace(/\.(srt|mkv|webvtt)$/, ".mp4")}#${location}">${(p1 || 0) + ":" + p2 + ":" + p3
                             }</a><button class="saveBtn">Save</button>`;
                     }
                 );
@@ -575,4 +569,4 @@ async function saveTerm() {
 
 function escapeRegExp(text) {
     return text.replace(/[[\]{}()*+?.,\\^$|#]/g, '\\$&');
-  }
+}
